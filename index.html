@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>나의 다마고치</title>
+    <style>
+        body { background-color: #f0f0f0; display: flex; justify-content: center; align-items: center; height: 100vh; font-family: 'Nanum Gothic', sans-serif; }
+        #game-container { background: #ffcc00; width: 300px; padding: 20px; border-radius: 50px; border: 8px solid #e6b800; box-shadow: 0 10px 0 #b38f00; text-align: center; }
+        #screen { background: #9dbb94; height: 180px; border-radius: 10px; border: 4px solid #555; position: relative; display: flex; flex-direction: column; justify-content: center; align-items: center; overflow: hidden; }
+        
+        /* 캐릭터 스타일 */
+        #pet { font-size: 50px; transition: transform 0.2s; }
+        .bounce { animation: bounce 1s infinite; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+
+        /* 상태바 */
+        .stats { margin-top: 15px; text-align: left; font-size: 14px; color: #333; }
+        .stat-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
+        .bar-bg { background: #eee; width: 150px; height: 10px; border-radius: 5px; overflow: hidden; }
+        .bar-fill { height: 100%; transition: width 0.3s; }
+
+        /* 버튼 */
+        .controls { display: flex; justify-content: space-around; margin-top: 20px; }
+        button { background: #fff; border: 3px solid #555; border-radius: 50%; width: 50px; height: 50px; cursor: pointer; font-weight: bold; font-size: 12px; }
+        button:active { transform: translateY(3px); }
+        
+        #message { font-size: 12px; margin-top: 10px; height: 15px; color: #555; }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div id="screen">
+        <div id="message">알을 돌봐주세요!</div>
+        <div id="pet" class="bounce">🥚</div>
+    </div>
+
+    <div class="stats">
+        <div class="stat-row">밥 🍗 <div class="bar-bg"><div id="hunger-bar" class="bar-fill" style="width: 100%; background: #ff4d4d;"></div></div></div>
+        <div class="stat-row">기분 😊 <div class="bar-bg"><div id="happy-bar" class="bar-fill" style="width: 100%; background: #4dff4d;"></div></div></div>
+        <div class="stat-row">청결 🧼 <div class="bar-bg"><div id="clean-bar" class="bar-fill" style="width: 100%; background: #4db8ff;"></div></div></div>
+    </div>
+
+    <div class="controls">
+        <button onclick="feed()">밥</button>
+        <button onclick="play()">놀기</button>
+        <button onclick="wash()">씻기</button>
+    </div>
+</div>
+
+<script>
+    let hunger = 100;
+    let happy = 100;
+    let clean = 100;
+    let age = 0;
+    let isDead = false;
+    let stage = 'egg'; // egg -> baby -> adult
+
+    const petEmoji = {
+        egg: '🥚',
+        baby: '🐥',
+        adult: '🦖',
+        dead: '👻'
+    };
+
+    function updateUI() {
+        document.getElementById('hunger-bar').style.width = hunger + '%';
+        document.getElementById('happy-bar').style.width = happy + '%';
+        document.getElementById('clean-bar').style.width = clean + '%';
+        
+        const pet = document.getElementById('pet');
+        if (isDead) {
+            pet.innerText = petEmoji.dead;
+            document.getElementById('message').innerText = "흑흑... 하늘나라로 갔어요.";
+            return;
+        }
+
+        // 진화 로직
+        if (age > 20 && stage === 'egg') {
+            stage = 'baby';
+            pet.innerText = petEmoji.baby;
+            document.getElementById('message').innerText = "부화했어요!";
+        } else if (age > 60 && stage === 'baby') {
+            stage = 'adult';
+            pet.innerText = petEmoji.adult;
+            document.getElementById('message').innerText = "성체가 되었습니다!";
+        }
+    }
+
+    // 시간 흐름 시스템 (3초마다 상태 감소)
+    const gameLoop = setInterval(() => {
+        if (isDead) return;
+
+        hunger -= 5;
+        happy -= 3;
+        clean -= 2;
+        age += 1;
+
+        if (hunger <= 0 || happy <= 0 || clean <= 0) {
+            isDead = true;
+            clearInterval(gameLoop);
+        }
+
+        updateUI();
+    }, 3000);
+
+    function feed() {
+        if (isDead) return;
+        hunger = Math.min(100, hunger + 20);
+        document.getElementById('message').innerText = "냠냠 맛있어!";
+        updateUI();
+    }
+
+    function play() {
+        if (isDead) return;
+        happy = Math.min(100, happy + 20);
+        document.getElementById('message').innerText = "꺄하하 즐거워!";
+        updateUI();
+    }
+
+    function wash() {
+        if (isDead) return;
+        clean = Math.min(100, clean + 20);
+        document.getElementById('message').innerText = "뽀득뽀득 깨끗해!";
+        updateUI();
+    }
+</script>
+
+</body>
+</html>
